@@ -1,77 +1,81 @@
-import { expect, test } from "../fixtures";
-import { ArtifactPage } from "../pages/artifact";
-import { ChatPage } from "../pages/chat";
+// import { expect, test } from "../fixtures";
+// import { ArtifactPage } from "../pages/artifact";
+// import { ChatPage } from "../pages/chat";
 
-test.describe("Artifacts activity", () => {
-  let chatPage: ChatPage;
-  let artifactPage: ArtifactPage;
+// Commented out tests as none of them are actually going to work
+// as they're tightly coupled to the Grok reasoning model's responses
+// See: https://github.com/benefacto/vercel-ai-chatbot/issues/3#issuecomment-3410681022
 
-  test.beforeEach(async ({ page }) => {
-    chatPage = new ChatPage(page);
-    artifactPage = new ArtifactPage(page);
+// test.describe("Artifacts activity", () => {
+//   let chatPage: ChatPage;
+//   let artifactPage: ArtifactPage;
 
-    await chatPage.createNewChat();
-  });
+//   test.beforeEach(async ({ page }) => {
+//     chatPage = new ChatPage(page);
+//     artifactPage = new ArtifactPage(page);
 
-  test("Create a text artifact", async () => {
-    test.fixme();
-    await chatPage.createNewChat();
+//     await chatPage.createNewChat();
+//   });
 
-    await chatPage.sendUserMessage(
-      "Help me write an essay about Silicon Valley"
-    );
-    await artifactPage.isGenerationComplete();
+//   test("Create a text artifact", async () => {
+//     test.fixme();
+//     await chatPage.createNewChat();
 
-    expect(artifactPage.artifact).toBeVisible();
+//     await chatPage.sendUserMessage(
+//       "Help me write an essay about Silicon Valley"
+//     );
+//     await artifactPage.isGenerationComplete();
 
-    const assistantMessage = await chatPage.getRecentAssistantMessage();
-    expect(assistantMessage.content).toBe(
-      "A document was created and is now visible to the user."
-    );
+//     expect(artifactPage.artifact).toBeVisible();
 
-    await chatPage.hasChatIdInUrl();
-  });
+//     const assistantMessage = await chatPage.getRecentAssistantMessage();
+//     expect(assistantMessage.content).toBe(
+//       "A document was created and is now visible to the user."
+//     );
 
-  test("Toggle artifact visibility", async () => {
-    test.fixme();
-    await chatPage.createNewChat();
+//     await chatPage.hasChatIdInUrl();
+//   });
 
-    await chatPage.sendUserMessage(
-      "Help me write an essay about Silicon Valley"
-    );
-    await artifactPage.isGenerationComplete();
+//   test("Toggle artifact visibility", async () => {
+//     test.fixme();
+//     await chatPage.createNewChat();
 
-    expect(artifactPage.artifact).toBeVisible();
+//     await chatPage.sendUserMessage(
+//       "Help me write an essay about Silicon Valley"
+//     );
+//     await artifactPage.isGenerationComplete();
 
-    const assistantMessage = await chatPage.getRecentAssistantMessage();
-    expect(assistantMessage.content).toBe(
-      "A document was created and is now visible to the user."
-    );
+//     expect(artifactPage.artifact).toBeVisible();
 
-    await artifactPage.closeArtifact();
-    await chatPage.isElementNotVisible("artifact");
-  });
+//     const assistantMessage = await chatPage.getRecentAssistantMessage();
+//     expect(assistantMessage.content).toBe(
+//       "A document was created and is now visible to the user."
+//     );
 
-  test("Send follow up message after generation", async () => {
-    test.fixme();
-    await chatPage.createNewChat();
+//     await artifactPage.closeArtifact();
+//     await chatPage.isElementNotVisible("artifact");
+//   });
 
-    await chatPage.sendUserMessage(
-      "Help me write an essay about Silicon Valley"
-    );
-    await artifactPage.isGenerationComplete();
+//   test("Send follow up message after generation", async () => {
+//     test.fixme();
+//     await chatPage.createNewChat();
 
-    expect(artifactPage.artifact).toBeVisible();
+//     await chatPage.sendUserMessage(
+//       "Help me write an essay about Silicon Valley"
+//     );
+//     await artifactPage.isGenerationComplete();
 
-    const assistantMessage = await artifactPage.getRecentAssistantMessage();
-    expect(assistantMessage.content).toBe(
-      "A document was created and is now visible to the user."
-    );
+//     expect(artifactPage.artifact).toBeVisible();
 
-    await artifactPage.sendUserMessage("Thanks!");
-    await artifactPage.isGenerationComplete();
+//     const assistantMessage = await artifactPage.getRecentAssistantMessage();
+//     expect(assistantMessage.content).toBe(
+//       "A document was created and is now visible to the user."
+//     );
 
-    const secondAssistantMessage = await chatPage.getRecentAssistantMessage();
-    expect(secondAssistantMessage.content).toBe("You're welcome!");
-  });
-});
+//     await artifactPage.sendUserMessage("Thanks!");
+//     await artifactPage.isGenerationComplete();
+
+//     const secondAssistantMessage = await chatPage.getRecentAssistantMessage();
+//     expect(secondAssistantMessage.content).toBe("You're welcome!");
+//   });
+// });
