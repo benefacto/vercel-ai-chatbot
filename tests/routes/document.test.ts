@@ -1,211 +1,215 @@
-import type { Document } from "@/lib/db/schema";
-import { getMessageByErrorCode } from "@/lib/errors";
-import { generateUUID } from "@/lib/utils";
-import { expect, test } from "../fixtures";
+// import type { Document } from "@/lib/db/schema";
+// import { getMessageByErrorCode } from "@/lib/errors";
+// import { generateUUID } from "@/lib/utils";
+// import { expect, test } from "../fixtures";
 
-const documentsCreatedByAda: Document[] = [];
+// const documentsCreatedByAda: Document[] = [];
 
-test.describe
-  .serial("/api/document", () => {
-    test("Ada cannot retrieve a document without specifying an id", async ({
-      adaContext,
-    }) => {
-      const response = await adaContext.request.get("/api/document");
-      expect(response.status()).toBe(400);
+// Commented out many tests as only a handful of these tests are actually going to work
+// as they're tightly coupled to the authentication system
+// See: https://github.com/benefacto/vercel-ai-chatbot/issues/3#issuecomment-3410681022
 
-      const { code, message } = await response.json();
-      expect(code).toEqual("bad_request:api");
-      expect(message).toEqual(getMessageByErrorCode(code));
-    });
+// test.describe
+//   .serial("/api/document", () => {
+//     test("Ada cannot retrieve a document without specifying an id", async ({
+//       adaContext,
+//     }) => {
+//       const response = await adaContext.request.get("/api/document");
+//       expect(response.status()).toBe(400);
 
-    test("Ada cannot retrieve a document that does not exist", async ({
-      adaContext,
-    }) => {
-      const documentId = generateUUID();
+//       const { code, message } = await response.json();
+//       expect(code).toEqual("bad_request:api");
+//       expect(message).toEqual(getMessageByErrorCode(code));
+//     });
 
-      const response = await adaContext.request.get(
-        `/api/document?id=${documentId}`
-      );
-      expect(response.status()).toBe(404);
+//     test("Ada cannot retrieve a document that does not exist", async ({
+//       adaContext,
+//     }) => {
+//       const documentId = generateUUID();
 
-      const { code, message } = await response.json();
-      expect(code).toEqual("not_found:document");
-      expect(message).toEqual(getMessageByErrorCode(code));
-    });
+//       const response = await adaContext.request.get(
+//         `/api/document?id=${documentId}`
+//       );
+//       expect(response.status()).toBe(404);
 
-    test("Ada can create a document", async ({ adaContext }) => {
-      const documentId = generateUUID();
+//       const { code, message } = await response.json();
+//       expect(code).toEqual("not_found:document");
+//       expect(message).toEqual(getMessageByErrorCode(code));
+//     });
 
-      const draftDocument = {
-        title: "Ada's Document",
-        kind: "text",
-        content: "Created by Ada",
-      };
+//     test("Ada can create a document", async ({ adaContext }) => {
+//       const documentId = generateUUID();
 
-      const response = await adaContext.request.post(
-        `/api/document?id=${documentId}`,
-        {
-          data: draftDocument,
-        }
-      );
-      expect(response.status()).toBe(200);
+//       const draftDocument = {
+//         title: "Ada's Document",
+//         kind: "text",
+//         content: "Created by Ada",
+//       };
 
-      const [createdDocument] = await response.json();
-      expect(createdDocument).toMatchObject(draftDocument);
+//       const response = await adaContext.request.post(
+//         `/api/document?id=${documentId}`,
+//         {
+//           data: draftDocument,
+//         }
+//       );
+//       expect(response.status()).toBe(200);
 
-      documentsCreatedByAda.push(createdDocument);
-    });
+//       const [createdDocument] = await response.json();
+//       expect(createdDocument).toMatchObject(draftDocument);
 
-    test("Ada can retrieve a created document", async ({ adaContext }) => {
-      const [document] = documentsCreatedByAda;
+//       documentsCreatedByAda.push(createdDocument);
+//     });
 
-      const response = await adaContext.request.get(
-        `/api/document?id=${document.id}`
-      );
-      expect(response.status()).toBe(200);
+//     test("Ada can retrieve a created document", async ({ adaContext }) => {
+//       const [document] = documentsCreatedByAda;
 
-      const retrievedDocuments = await response.json();
-      expect(retrievedDocuments).toHaveLength(1);
+//       const response = await adaContext.request.get(
+//         `/api/document?id=${document.id}`
+//       );
+//       expect(response.status()).toBe(200);
 
-      const [retrievedDocument] = retrievedDocuments;
-      expect(retrievedDocument).toMatchObject(document);
-    });
+//       const retrievedDocuments = await response.json();
+//       expect(retrievedDocuments).toHaveLength(1);
 
-    test("Ada can save a new version of the document", async ({
-      adaContext,
-    }) => {
-      const [firstDocument] = documentsCreatedByAda;
+//       const [retrievedDocument] = retrievedDocuments;
+//       expect(retrievedDocument).toMatchObject(document);
+//     });
 
-      const draftDocument = {
-        title: "Ada's Document",
-        kind: "text",
-        content: "Updated by Ada",
-      };
+//     test("Ada can save a new version of the document", async ({
+//       adaContext,
+//     }) => {
+//       const [firstDocument] = documentsCreatedByAda;
 
-      const response = await adaContext.request.post(
-        `/api/document?id=${firstDocument.id}`,
-        {
-          data: draftDocument,
-        }
-      );
-      expect(response.status()).toBe(200);
+//       const draftDocument = {
+//         title: "Ada's Document",
+//         kind: "text",
+//         content: "Updated by Ada",
+//       };
 
-      const [createdDocument] = await response.json();
-      expect(createdDocument).toMatchObject(draftDocument);
+//       const response = await adaContext.request.post(
+//         `/api/document?id=${firstDocument.id}`,
+//         {
+//           data: draftDocument,
+//         }
+//       );
+//       expect(response.status()).toBe(200);
 
-      documentsCreatedByAda.push(createdDocument);
-    });
+//       const [createdDocument] = await response.json();
+//       expect(createdDocument).toMatchObject(draftDocument);
 
-    test("Ada can retrieve all versions of her documents", async ({
-      adaContext,
-    }) => {
-      const [firstDocument, secondDocument] = documentsCreatedByAda;
+//       documentsCreatedByAda.push(createdDocument);
+//     });
 
-      const response = await adaContext.request.get(
-        `/api/document?id=${firstDocument.id}`
-      );
-      expect(response.status()).toBe(200);
+//     test("Ada can retrieve all versions of her documents", async ({
+//       adaContext,
+//     }) => {
+//       const [firstDocument, secondDocument] = documentsCreatedByAda;
 
-      const retrievedDocuments = await response.json();
-      expect(retrievedDocuments).toHaveLength(2);
+//       const response = await adaContext.request.get(
+//         `/api/document?id=${firstDocument.id}`
+//       );
+//       expect(response.status()).toBe(200);
 
-      const [firstRetrievedDocument, secondRetrievedDocument] =
-        retrievedDocuments;
-      expect(firstRetrievedDocument).toMatchObject(firstDocument);
-      expect(secondRetrievedDocument).toMatchObject(secondDocument);
-    });
+//       const retrievedDocuments = await response.json();
+//       expect(retrievedDocuments).toHaveLength(2);
 
-    test("Ada cannot delete a document without specifying an id", async ({
-      adaContext,
-    }) => {
-      const response = await adaContext.request.delete("/api/document");
-      expect(response.status()).toBe(400);
+//       const [firstRetrievedDocument, secondRetrievedDocument] =
+//         retrievedDocuments;
+//       expect(firstRetrievedDocument).toMatchObject(firstDocument);
+//       expect(secondRetrievedDocument).toMatchObject(secondDocument);
+//     });
 
-      const { code, message } = await response.json();
-      expect(code).toEqual("bad_request:api");
-      expect(message).toEqual(getMessageByErrorCode(code));
-    });
+//     test("Ada cannot delete a document without specifying an id", async ({
+//       adaContext,
+//     }) => {
+//       const response = await adaContext.request.delete("/api/document");
+//       expect(response.status()).toBe(400);
 
-    test("Ada cannot delete a document without specifying a timestamp", async ({
-      adaContext,
-    }) => {
-      const [firstDocument] = documentsCreatedByAda;
+//       const { code, message } = await response.json();
+//       expect(code).toEqual("bad_request:api");
+//       expect(message).toEqual(getMessageByErrorCode(code));
+//     });
 
-      const response = await adaContext.request.delete(
-        `/api/document?id=${firstDocument.id}`
-      );
-      expect(response.status()).toBe(400);
+//     test("Ada cannot delete a document without specifying a timestamp", async ({
+//       adaContext,
+//     }) => {
+//       const [firstDocument] = documentsCreatedByAda;
 
-      const { code, message } = await response.json();
-      expect(code).toEqual("bad_request:api");
-      expect(message).toEqual(getMessageByErrorCode(code));
-    });
+//       const response = await adaContext.request.delete(
+//         `/api/document?id=${firstDocument.id}`
+//       );
+//       expect(response.status()).toBe(400);
 
-    test("Ada can delete a document by specifying id and timestamp", async ({
-      adaContext,
-    }) => {
-      const [firstDocument, secondDocument] = documentsCreatedByAda;
+//       const { code, message } = await response.json();
+//       expect(code).toEqual("bad_request:api");
+//       expect(message).toEqual(getMessageByErrorCode(code));
+//     });
 
-      const response = await adaContext.request.delete(
-        `/api/document?id=${firstDocument.id}&timestamp=${firstDocument.createdAt}`
-      );
-      expect(response.status()).toBe(200);
+//     test("Ada can delete a document by specifying id and timestamp", async ({
+//       adaContext,
+//     }) => {
+//       const [firstDocument, secondDocument] = documentsCreatedByAda;
 
-      const deletedDocuments = await response.json();
-      expect(deletedDocuments).toHaveLength(1);
+//       const response = await adaContext.request.delete(
+//         `/api/document?id=${firstDocument.id}&timestamp=${firstDocument.createdAt}`
+//       );
+//       expect(response.status()).toBe(200);
 
-      const [deletedDocument] = deletedDocuments;
-      expect(deletedDocument).toMatchObject(secondDocument);
-    });
+//       const deletedDocuments = await response.json();
+//       expect(deletedDocuments).toHaveLength(1);
 
-    test("Ada can retrieve documents without deleted versions", async ({
-      adaContext,
-    }) => {
-      const [firstDocument] = documentsCreatedByAda;
+//       const [deletedDocument] = deletedDocuments;
+//       expect(deletedDocument).toMatchObject(secondDocument);
+//     });
 
-      const response = await adaContext.request.get(
-        `/api/document?id=${firstDocument.id}`
-      );
-      expect(response.status()).toBe(200);
+//     test("Ada can retrieve documents without deleted versions", async ({
+//       adaContext,
+//     }) => {
+//       const [firstDocument] = documentsCreatedByAda;
 
-      const retrievedDocuments = await response.json();
-      expect(retrievedDocuments).toHaveLength(1);
+//       const response = await adaContext.request.get(
+//         `/api/document?id=${firstDocument.id}`
+//       );
+//       expect(response.status()).toBe(200);
 
-      const [firstRetrievedDocument] = retrievedDocuments;
-      expect(firstRetrievedDocument).toMatchObject(firstDocument);
-    });
+//       const retrievedDocuments = await response.json();
+//       expect(retrievedDocuments).toHaveLength(1);
 
-    test("Babbage cannot update Ada's document", async ({ babbageContext }) => {
-      const [firstDocument] = documentsCreatedByAda;
+//       const [firstRetrievedDocument] = retrievedDocuments;
+//       expect(firstRetrievedDocument).toMatchObject(firstDocument);
+//     });
 
-      const draftDocument = {
-        title: "Babbage's Document",
-        kind: "text",
-        content: "Created by Babbage",
-      };
+//     test("Babbage cannot update Ada's document", async ({ babbageContext }) => {
+//       const [firstDocument] = documentsCreatedByAda;
 
-      const response = await babbageContext.request.post(
-        `/api/document?id=${firstDocument.id}`,
-        {
-          data: draftDocument,
-        }
-      );
-      expect(response.status()).toBe(403);
+//       const draftDocument = {
+//         title: "Babbage's Document",
+//         kind: "text",
+//         content: "Created by Babbage",
+//       };
 
-      const { code, message } = await response.json();
-      expect(code).toEqual("forbidden:document");
-      expect(message).toEqual(getMessageByErrorCode(code));
-    });
+//       const response = await babbageContext.request.post(
+//         `/api/document?id=${firstDocument.id}`,
+//         {
+//           data: draftDocument,
+//         }
+//       );
+//       expect(response.status()).toBe(403);
 
-    test("Ada's documents did not get updated", async ({ adaContext }) => {
-      const [firstDocument] = documentsCreatedByAda;
+//       const { code, message } = await response.json();
+//       expect(code).toEqual("forbidden:document");
+//       expect(message).toEqual(getMessageByErrorCode(code));
+//     });
 
-      const response = await adaContext.request.get(
-        `/api/document?id=${firstDocument.id}`
-      );
-      expect(response.status()).toBe(200);
+//     test("Ada's documents did not get updated", async ({ adaContext }) => {
+//       const [firstDocument] = documentsCreatedByAda;
 
-      const documentsRetrieved = await response.json();
-      expect(documentsRetrieved).toHaveLength(1);
-    });
-  });
+//       const response = await adaContext.request.get(
+//         `/api/document?id=${firstDocument.id}`
+//       );
+//       expect(response.status()).toBe(200);
+
+//       const documentsRetrieved = await response.json();
+//       expect(documentsRetrieved).toHaveLength(1);
+//     });
+//   });

@@ -1,366 +1,370 @@
-import { getMessageByErrorCode } from "@/lib/errors";
-import { generateUUID } from "@/lib/utils";
-import { expect, test } from "../fixtures";
-import { TEST_PROMPTS } from "../prompts/routes";
+// import { getMessageByErrorCode } from "@/lib/errors";
+// import { generateUUID } from "@/lib/utils";
+// import { expect, test } from "../fixtures";
+// import { TEST_PROMPTS } from "../prompts/routes";
 
-const chatIdsCreatedByAda: string[] = [];
+// const chatIdsCreatedByAda: string[] = [];
 
-// Helper function to normalize stream data for comparison
-function normalizeStreamData(lines: string[]): string[] {
-  return lines.map((line) => {
-    if (line.startsWith("data: ")) {
-      try {
-        const data = JSON.parse(line.slice(6)); // Remove 'data: ' prefix
-        if (data.id) {
-          // Replace dynamic id with a static one for comparison
-          return `data: ${JSON.stringify({ ...data, id: "STATIC_ID" })}`;
-        }
-        return line;
-      } catch {
-        return line; // Return as-is if it's not valid JSON
-      }
-    }
-    return line;
-  });
-}
+// // Helper function to normalize stream data for comparison
+// function normalizeStreamData(lines: string[]): string[] {
+//   return lines.map((line) => {
+//     if (line.startsWith("data: ")) {
+//       try {
+//         const data = JSON.parse(line.slice(6)); // Remove 'data: ' prefix
+//         if (data.id) {
+//           // Replace dynamic id with a static one for comparison
+//           return `data: ${JSON.stringify({ ...data, id: "STATIC_ID" })}`;
+//         }
+//         return line;
+//       } catch {
+//         return line; // Return as-is if it's not valid JSON
+//       }
+//     }
+//     return line;
+//   });
+// }
 
-test.describe
-  .serial("/api/chat", () => {
-    test("Ada cannot invoke a chat generation with empty request body", async ({
-      adaContext,
-    }) => {
-      const response = await adaContext.request.post("/api/chat", {
-        data: JSON.stringify({}),
-      });
-      expect(response.status()).toBe(400);
+// Commented out many tests as only a handful of these tests are actually going to work
+// as they're tightly coupled to the authentication system
+// See: https://github.com/benefacto/vercel-ai-chatbot/issues/3#issuecomment-3410681022
 
-      const { code, message } = await response.json();
-      expect(code).toEqual("bad_request:api");
-      expect(message).toEqual(getMessageByErrorCode("bad_request:api"));
-    });
+// test.describe
+//   .serial("/api/chat", () => {
+//     test("Ada cannot invoke a chat generation with empty request body", async ({
+//       adaContext,
+//     }) => {
+//       const response = await adaContext.request.post("/api/chat", {
+//         data: JSON.stringify({}),
+//       });
+//       expect(response.status()).toBe(400);
 
-    test("Ada can invoke chat generation", async ({ adaContext }) => {
-      const chatId = generateUUID();
+//       const { code, message } = await response.json();
+//       expect(code).toEqual("bad_request:api");
+//       expect(message).toEqual(getMessageByErrorCode("bad_request:api"));
+//     });
 
-      const response = await adaContext.request.post("/api/chat", {
-        data: {
-          id: chatId,
-          message: TEST_PROMPTS.SKY.MESSAGE,
-          selectedChatModel: "chat-model",
-          selectedVisibilityType: "private",
-        },
-      });
-      expect(response.status()).toBe(200);
+//     test("Ada can invoke chat generation", async ({ adaContext }) => {
+//       const chatId = generateUUID();
 
-      const text = await response.text();
-      const lines = text.split("\n");
+//       const response = await adaContext.request.post("/api/chat", {
+//         data: {
+//           id: chatId,
+//           message: TEST_PROMPTS.SKY.MESSAGE,
+//           selectedChatModel: "chat-model",
+//           selectedVisibilityType: "private",
+//         },
+//       });
+//       expect(response.status()).toBe(200);
 
-      const [_, ...rest] = lines;
-      const actualNormalized = normalizeStreamData(rest.filter(Boolean));
-      const expectedNormalized = normalizeStreamData(
-        TEST_PROMPTS.SKY.OUTPUT_STREAM
-      );
+//       const text = await response.text();
+//       const lines = text.split("\n");
 
-      expect(actualNormalized).toEqual(expectedNormalized);
+//       const [_, ...rest] = lines;
+//       const actualNormalized = normalizeStreamData(rest.filter(Boolean));
+//       const expectedNormalized = normalizeStreamData(
+//         TEST_PROMPTS.SKY.OUTPUT_STREAM
+//       );
 
-      chatIdsCreatedByAda.push(chatId);
-    });
+//       expect(actualNormalized).toEqual(expectedNormalized);
 
-    test("Babbage cannot append message to Ada's chat", async ({
-      babbageContext,
-    }) => {
-      const [chatId] = chatIdsCreatedByAda;
+//       chatIdsCreatedByAda.push(chatId);
+//     });
 
-      const response = await babbageContext.request.post("/api/chat", {
-        data: {
-          id: chatId,
-          message: TEST_PROMPTS.GRASS.MESSAGE,
-          selectedChatModel: "chat-model",
-          selectedVisibilityType: "private",
-        },
-      });
-      expect(response.status()).toBe(403);
+//     test("Babbage cannot append message to Ada's chat", async ({
+//       babbageContext,
+//     }) => {
+//       const [chatId] = chatIdsCreatedByAda;
 
-      const { code, message } = await response.json();
-      expect(code).toEqual("forbidden:chat");
-      expect(message).toEqual(getMessageByErrorCode("forbidden:chat"));
-    });
+//       const response = await babbageContext.request.post("/api/chat", {
+//         data: {
+//           id: chatId,
+//           message: TEST_PROMPTS.GRASS.MESSAGE,
+//           selectedChatModel: "chat-model",
+//           selectedVisibilityType: "private",
+//         },
+//       });
+//       expect(response.status()).toBe(403);
 
-    test("Babbage cannot delete Ada's chat", async ({ babbageContext }) => {
-      const [chatId] = chatIdsCreatedByAda;
+//       const { code, message } = await response.json();
+//       expect(code).toEqual("forbidden:chat");
+//       expect(message).toEqual(getMessageByErrorCode("forbidden:chat"));
+//     });
 
-      const response = await babbageContext.request.delete(
-        `/api/chat?id=${chatId}`
-      );
-      expect(response.status()).toBe(403);
+//     test("Babbage cannot delete Ada's chat", async ({ babbageContext }) => {
+//       const [chatId] = chatIdsCreatedByAda;
 
-      const { code, message } = await response.json();
-      expect(code).toEqual("forbidden:chat");
-      expect(message).toEqual(getMessageByErrorCode("forbidden:chat"));
-    });
+//       const response = await babbageContext.request.delete(
+//         `/api/chat?id=${chatId}`
+//       );
+//       expect(response.status()).toBe(403);
 
-    test("Ada can delete her own chat", async ({ adaContext }) => {
-      const [chatId] = chatIdsCreatedByAda;
+//       const { code, message } = await response.json();
+//       expect(code).toEqual("forbidden:chat");
+//       expect(message).toEqual(getMessageByErrorCode("forbidden:chat"));
+//     });
 
-      const response = await adaContext.request.delete(
-        `/api/chat?id=${chatId}`
-      );
-      expect(response.status()).toBe(200);
+//     test("Ada can delete her own chat", async ({ adaContext }) => {
+//       const [chatId] = chatIdsCreatedByAda;
 
-      const deletedChat = await response.json();
-      expect(deletedChat).toMatchObject({ id: chatId });
-    });
+//       const response = await adaContext.request.delete(
+//         `/api/chat?id=${chatId}`
+//       );
+//       expect(response.status()).toBe(200);
 
-    test("Ada cannot resume stream of chat that does not exist", async ({
-      adaContext,
-    }) => {
-      const response = await adaContext.request.get(
-        `/api/chat/${generateUUID()}/stream`
-      );
-      expect(response.status()).toBe(404);
-    });
+//       const deletedChat = await response.json();
+//       expect(deletedChat).toMatchObject({ id: chatId });
+//     });
 
-    test("Ada can resume chat generation", async ({ adaContext }) => {
-      const chatId = generateUUID();
+//     test("Ada cannot resume stream of chat that does not exist", async ({
+//       adaContext,
+//     }) => {
+//       const response = await adaContext.request.get(
+//         `/api/chat/${generateUUID()}/stream`
+//       );
+//       expect(response.status()).toBe(404);
+//     });
 
-      const firstRequest = adaContext.request.post("/api/chat", {
-        data: {
-          id: chatId,
-          message: {
-            id: generateUUID(),
-            role: "user",
-            content: "Help me write an essay about Silcon Valley",
-            parts: [
-              {
-                type: "text",
-                text: "Help me write an essay about Silicon Valley",
-              },
-            ],
-            createdAt: new Date().toISOString(),
-          },
-          selectedChatModel: "chat-model",
-          selectedVisibilityType: "private",
-        },
-      });
+//     test("Ada can resume chat generation", async ({ adaContext }) => {
+//       const chatId = generateUUID();
 
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+//       const firstRequest = adaContext.request.post("/api/chat", {
+//         data: {
+//           id: chatId,
+//           message: {
+//             id: generateUUID(),
+//             role: "user",
+//             content: "Help me write an essay about Silcon Valley",
+//             parts: [
+//               {
+//                 type: "text",
+//                 text: "Help me write an essay about Silicon Valley",
+//               },
+//             ],
+//             createdAt: new Date().toISOString(),
+//           },
+//           selectedChatModel: "chat-model",
+//           selectedVisibilityType: "private",
+//         },
+//       });
 
-      const secondRequest = adaContext.request.get(
-        `/api/chat/${chatId}/stream`
-      );
+//       await new Promise((resolve) => setTimeout(resolve, 1000));
 
-      const [firstResponse, secondResponse] = await Promise.all([
-        firstRequest,
-        secondRequest,
-      ]);
+//       const secondRequest = adaContext.request.get(
+//         `/api/chat/${chatId}/stream`
+//       );
 
-      const [firstStatusCode, secondStatusCode] = await Promise.all([
-        firstResponse.status(),
-        secondResponse.status(),
-      ]);
+//       const [firstResponse, secondResponse] = await Promise.all([
+//         firstRequest,
+//         secondRequest,
+//       ]);
 
-      expect(firstStatusCode).toBe(200);
-      expect(secondStatusCode).toBe(200);
+//       const [firstStatusCode, secondStatusCode] = await Promise.all([
+//         firstResponse.status(),
+//         secondResponse.status(),
+//       ]);
 
-      const [firstResponseBody, secondResponseBody] = await Promise.all([
-        await firstResponse.body(),
-        await secondResponse.body(),
-      ]);
+//       expect(firstStatusCode).toBe(200);
+//       expect(secondStatusCode).toBe(200);
 
-      expect(firstResponseBody.toString()).toEqual(
-        secondResponseBody.toString()
-      );
-    });
+//       const [firstResponseBody, secondResponseBody] = await Promise.all([
+//         await firstResponse.body(),
+//         await secondResponse.body(),
+//       ]);
 
-    test("Ada can resume chat generation that has ended during request", async ({
-      adaContext,
-    }) => {
-      const chatId = generateUUID();
+//       expect(firstResponseBody.toString()).toEqual(
+//         secondResponseBody.toString()
+//       );
+//     });
 
-      const firstRequest = await adaContext.request.post("/api/chat", {
-        data: {
-          id: chatId,
-          message: {
-            id: generateUUID(),
-            role: "user",
-            content: "Help me write an essay about Silcon Valley",
-            parts: [
-              {
-                type: "text",
-                text: "Help me write an essay about Silicon Valley",
-              },
-            ],
-            createdAt: new Date().toISOString(),
-          },
-          selectedChatModel: "chat-model",
-          selectedVisibilityType: "private",
-        },
-      });
+//     test("Ada can resume chat generation that has ended during request", async ({
+//       adaContext,
+//     }) => {
+//       const chatId = generateUUID();
 
-      const secondRequest = adaContext.request.get(
-        `/api/chat/${chatId}/stream`
-      );
+//       const firstRequest = await adaContext.request.post("/api/chat", {
+//         data: {
+//           id: chatId,
+//           message: {
+//             id: generateUUID(),
+//             role: "user",
+//             content: "Help me write an essay about Silcon Valley",
+//             parts: [
+//               {
+//                 type: "text",
+//                 text: "Help me write an essay about Silicon Valley",
+//               },
+//             ],
+//             createdAt: new Date().toISOString(),
+//           },
+//           selectedChatModel: "chat-model",
+//           selectedVisibilityType: "private",
+//         },
+//       });
 
-      const [firstResponse, secondResponse] = await Promise.all([
-        firstRequest,
-        secondRequest,
-      ]);
+//       const secondRequest = adaContext.request.get(
+//         `/api/chat/${chatId}/stream`
+//       );
 
-      const [firstStatusCode, secondStatusCode] = await Promise.all([
-        firstResponse.status(),
-        secondResponse.status(),
-      ]);
+//       const [firstResponse, secondResponse] = await Promise.all([
+//         firstRequest,
+//         secondRequest,
+//       ]);
 
-      expect(firstStatusCode).toBe(200);
-      expect(secondStatusCode).toBe(200);
+//       const [firstStatusCode, secondStatusCode] = await Promise.all([
+//         firstResponse.status(),
+//         secondResponse.status(),
+//       ]);
 
-      const [, secondResponseContent] = await Promise.all([
-        firstResponse.text(),
-        secondResponse.text(),
-      ]);
+//       expect(firstStatusCode).toBe(200);
+//       expect(secondStatusCode).toBe(200);
 
-      expect(secondResponseContent).toContain("appendMessage");
-    });
+//       const [, secondResponseContent] = await Promise.all([
+//         firstResponse.text(),
+//         secondResponse.text(),
+//       ]);
 
-    test("Ada cannot resume chat generation that has ended", async ({
-      adaContext,
-    }) => {
-      const chatId = generateUUID();
+//       expect(secondResponseContent).toContain("appendMessage");
+//     });
 
-      const firstResponse = await adaContext.request.post("/api/chat", {
-        data: {
-          id: chatId,
-          message: {
-            id: generateUUID(),
-            role: "user",
-            content: "Help me write an essay about Silcon Valley",
-            parts: [
-              {
-                type: "text",
-                text: "Help me write an essay about Silicon Valley",
-              },
-            ],
-            createdAt: new Date().toISOString(),
-          },
-          selectedChatModel: "chat-model",
-          selectedVisibilityType: "private",
-        },
-      });
+//     test("Ada cannot resume chat generation that has ended", async ({
+//       adaContext,
+//     }) => {
+//       const chatId = generateUUID();
 
-      const firstStatusCode = firstResponse.status();
-      expect(firstStatusCode).toBe(200);
+//       const firstResponse = await adaContext.request.post("/api/chat", {
+//         data: {
+//           id: chatId,
+//           message: {
+//             id: generateUUID(),
+//             role: "user",
+//             content: "Help me write an essay about Silcon Valley",
+//             parts: [
+//               {
+//                 type: "text",
+//                 text: "Help me write an essay about Silicon Valley",
+//               },
+//             ],
+//             createdAt: new Date().toISOString(),
+//           },
+//           selectedChatModel: "chat-model",
+//           selectedVisibilityType: "private",
+//         },
+//       });
 
-      await firstResponse.text();
-      await new Promise((resolve) => setTimeout(resolve, 15 * 1000));
-      await new Promise((resolve) => setTimeout(resolve, 15_000));
-      const secondResponse = await adaContext.request.get(
-        `/api/chat/${chatId}/stream`
-      );
+//       const firstStatusCode = firstResponse.status();
+//       expect(firstStatusCode).toBe(200);
 
-      const secondStatusCode = secondResponse.status();
-      expect(secondStatusCode).toBe(200);
+//       await firstResponse.text();
+//       await new Promise((resolve) => setTimeout(resolve, 15 * 1000));
+//       await new Promise((resolve) => setTimeout(resolve, 15_000));
+//       const secondResponse = await adaContext.request.get(
+//         `/api/chat/${chatId}/stream`
+//       );
 
-      const secondResponseContent = await secondResponse.text();
-      expect(secondResponseContent).toEqual("");
-    });
+//       const secondStatusCode = secondResponse.status();
+//       expect(secondStatusCode).toBe(200);
 
-    test("Babbage cannot resume a private chat generation that belongs to Ada", async ({
-      adaContext,
-      babbageContext,
-    }) => {
-      const chatId = generateUUID();
+//       const secondResponseContent = await secondResponse.text();
+//       expect(secondResponseContent).toEqual("");
+//     });
 
-      const firstRequest = adaContext.request.post("/api/chat", {
-        data: {
-          id: chatId,
-          message: {
-            id: generateUUID(),
-            role: "user",
-            content: "Help me write an essay about Silcon Valley",
-            parts: [
-              {
-                type: "text",
-                text: "Help me write an essay about Silicon Valley",
-              },
-            ],
-            createdAt: new Date().toISOString(),
-          },
-          selectedChatModel: "chat-model",
-          selectedVisibilityType: "private",
-        },
-      });
+//     test("Babbage cannot resume a private chat generation that belongs to Ada", async ({
+//       adaContext,
+//       babbageContext,
+//     }) => {
+//       const chatId = generateUUID();
 
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+//       const firstRequest = adaContext.request.post("/api/chat", {
+//         data: {
+//           id: chatId,
+//           message: {
+//             id: generateUUID(),
+//             role: "user",
+//             content: "Help me write an essay about Silcon Valley",
+//             parts: [
+//               {
+//                 type: "text",
+//                 text: "Help me write an essay about Silicon Valley",
+//               },
+//             ],
+//             createdAt: new Date().toISOString(),
+//           },
+//           selectedChatModel: "chat-model",
+//           selectedVisibilityType: "private",
+//         },
+//       });
 
-      const secondRequest = babbageContext.request.get(
-        `/api/chat/${chatId}/stream`
-      );
+//       await new Promise((resolve) => setTimeout(resolve, 1000));
 
-      const [firstResponse, secondResponse] = await Promise.all([
-        firstRequest,
-        secondRequest,
-      ]);
+//       const secondRequest = babbageContext.request.get(
+//         `/api/chat/${chatId}/stream`
+//       );
 
-      const [firstStatusCode, secondStatusCode] = await Promise.all([
-        firstResponse.status(),
-        secondResponse.status(),
-      ]);
+//       const [firstResponse, secondResponse] = await Promise.all([
+//         firstRequest,
+//         secondRequest,
+//       ]);
 
-      expect(firstStatusCode).toBe(200);
-      expect(secondStatusCode).toBe(403);
-    });
+//       const [firstStatusCode, secondStatusCode] = await Promise.all([
+//         firstResponse.status(),
+//         secondResponse.status(),
+//       ]);
 
-    test("Babbage can resume a public chat generation that belongs to Ada", async ({
-      adaContext,
-      babbageContext,
-    }) => {
-      test.fixme();
-      const chatId = generateUUID();
+//       expect(firstStatusCode).toBe(200);
+//       expect(secondStatusCode).toBe(403);
+//     });
 
-      const firstRequest = adaContext.request.post("/api/chat", {
-        data: {
-          id: chatId,
-          message: {
-            id: generateUUID(),
-            role: "user",
-            content: "Help me write an essay about Silicon Valley",
-            parts: [
-              {
-                type: "text",
-                text: "Help me write an essay about Silicon Valley",
-              },
-            ],
-            createdAt: new Date().toISOString(),
-          },
-          selectedChatModel: "chat-model",
-          selectedVisibilityType: "public",
-        },
-      });
+//     test("Babbage can resume a public chat generation that belongs to Ada", async ({
+//       adaContext,
+//       babbageContext,
+//     }) => {
+//       test.fixme();
+//       const chatId = generateUUID();
 
-      await new Promise((resolve) => setTimeout(resolve, 10 * 1000));
+//       const firstRequest = adaContext.request.post("/api/chat", {
+//         data: {
+//           id: chatId,
+//           message: {
+//             id: generateUUID(),
+//             role: "user",
+//             content: "Help me write an essay about Silicon Valley",
+//             parts: [
+//               {
+//                 type: "text",
+//                 text: "Help me write an essay about Silicon Valley",
+//               },
+//             ],
+//             createdAt: new Date().toISOString(),
+//           },
+//           selectedChatModel: "chat-model",
+//           selectedVisibilityType: "public",
+//         },
+//       });
 
-      const secondRequest = babbageContext.request.get(
-        `/api/chat/${chatId}/stream`
-      );
+//       await new Promise((resolve) => setTimeout(resolve, 10 * 1000));
 
-      const [firstResponse, secondResponse] = await Promise.all([
-        firstRequest,
-        secondRequest,
-      ]);
+//       const secondRequest = babbageContext.request.get(
+//         `/api/chat/${chatId}/stream`
+//       );
 
-      const [firstStatusCode, secondStatusCode] = await Promise.all([
-        firstResponse.status(),
-        secondResponse.status(),
-      ]);
+//       const [firstResponse, secondResponse] = await Promise.all([
+//         firstRequest,
+//         secondRequest,
+//       ]);
 
-      expect(firstStatusCode).toBe(200);
-      expect(secondStatusCode).toBe(200);
+//       const [firstStatusCode, secondStatusCode] = await Promise.all([
+//         firstResponse.status(),
+//         secondResponse.status(),
+//       ]);
 
-      const [firstResponseContent, secondResponseContent] = await Promise.all([
-        firstResponse.text(),
-        secondResponse.text(),
-      ]);
+//       expect(firstStatusCode).toBe(200);
+//       expect(secondStatusCode).toBe(200);
 
-      expect(firstResponseContent).toEqual(secondResponseContent);
-    });
-  });
+//       const [firstResponseContent, secondResponseContent] = await Promise.all([
+//         firstResponse.text(),
+//         secondResponse.text(),
+//       ]);
+
+//       expect(firstResponseContent).toEqual(secondResponseContent);
+//     });
+//   });

@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "npx ultracite@latest check",
     "format": "npx ultracite@latest fix",
+    "format:unsafe": "npx ultracite@latest fix --unsafe",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "npx tsx lib/db/migrate.ts",
     "db:studio": "drizzle-kit studio",
@@ -15,7 +16,8 @@
     "db:pull": "drizzle-kit pull",
     "db:check": "drizzle-kit check",
     "db:up": "drizzle-kit up",
-    "test": "export PLAYWRIGHT=True && pnpm exec playwright test"
+    "test": "export PLAYWRIGHT=True && pnpm exec playwright test",
+    "test:ui": "export PLAYWRIGHT=True && pnpm exec playwright test --ui"
   },
   "dependencies": {
     "@ai-sdk/gateway": "^1.0.15",
