@@ -7,7 +7,7 @@
     "build": "tsx lib/db/migrate && next build",
     "start": "next start",
     "lint": "npx ultracite@latest check",
-    "format": "npx ultracite@latest fix",
+    "format": "npx ultracite@latest fix --unsafe",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "npx tsx lib/db/migrate.ts",
     "db:studio": "drizzle-kit studio",
