@@ -10,6 +10,7 @@ export const chatModels: ChatModel[] = [
   {
     id: "chat-model",
     name: "LongCat Flash Chat",
-    description: "LongCat-Flash-Chat is a high-throughput MoE chat model (128k context) optimized for agentic tasks.",
+    description:
+      "LongCat-Flash-Chat is a high-throughput MoE chat model (128k context) optimized for agentic tasks.",
   },
 ];
